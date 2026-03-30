@@ -21,6 +21,7 @@ export interface ProjectPage {
   path: string
   label: string
   sort_order: number
+  feedback_enabled: boolean
   created_at: string
 }
 

@@ -74,8 +74,9 @@ interface PageStore {
   pages: ProjectPage[]
   loading: boolean
   fetchPages: (projectId: string) => Promise<void>
-  addPage: (page: Omit<ProjectPage, 'id' | 'created_at'>) => Promise<ProjectPage | null>
+  addPage: (page: Omit<ProjectPage, 'id' | 'created_at' | 'feedback_enabled'>) => Promise<ProjectPage | null>
   deletePage: (id: string) => Promise<void>
+  toggleFeedback: (id: string, enabled: boolean) => Promise<void>
 }
 
 export const usePageStore = create<PageStore>((set, get) => ({
@@ -96,7 +97,7 @@ export const usePageStore = create<PageStore>((set, get) => ({
   addPage: async (page) => {
     const { data, error } = await supabase
       .from('project_pages')
-      .insert(page)
+      .insert({ ...page, feedback_enabled: false })
       .select()
       .single()
 
@@ -108,6 +109,19 @@ export const usePageStore = create<PageStore>((set, get) => ({
   deletePage: async (id) => {
     await supabase.from('project_pages').delete().eq('id', id)
     set({ pages: get().pages.filter(p => p.id !== id) })
+  },
+
+  toggleFeedback: async (id, enabled) => {
+    const { data } = await supabase
+      .from('project_pages')
+      .update({ feedback_enabled: enabled })
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (data) {
+      set({ pages: get().pages.map(p => p.id === id ? { ...p, feedback_enabled: enabled } : p) })
+    }
   },
 }))
 

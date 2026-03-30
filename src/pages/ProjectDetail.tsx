@@ -17,9 +17,9 @@ type Tab = 'pages' | 'feedback' | 'settings'
 export function ProjectDetail() {
   const { projectId } = useParams()
   const navigate = useNavigate()
-  const { projects, fetchProjects, updateProject, generateReviewToken } = useProjectStore()
+  const { projects, fetchProjects, updateProject, deleteProject, generateReviewToken } = useProjectStore()
   const { feedbacks, fetchFeedbacks, updateFeedbackStatus } = useFeedbackStore()
-  const { pages, fetchPages, addPage, deletePage } = usePageStore()
+  const { pages, fetchPages, addPage, deletePage, toggleFeedback } = usePageStore()
 
   const [activeTab, setActiveTab] = useState<Tab>('pages')
   const [copied, setCopied] = useState(false)
@@ -32,6 +32,15 @@ export function ProjectDetail() {
   const [newPath, setNewPath] = useState('')
   const [newLabel, setNewLabel] = useState('')
 
+  // Settings form
+  const [editName, setEditName] = useState('')
+  const [editClientName, setEditClientName] = useState('')
+  const [editClientEmail, setEditClientEmail] = useState('')
+  const [editClientPhone, setEditClientPhone] = useState('')
+  const [editExistingUrl, setEditExistingUrl] = useState('')
+  const [editBenchmarkUrl, setEditBenchmarkUrl] = useState('')
+  const [editNewSiteUrl, setEditNewSiteUrl] = useState('')
+
   const project = projects.find(p => p.id === projectId)
 
   useEffect(() => {
@@ -42,6 +51,13 @@ export function ProjectDetail() {
     if (project) {
       fetchFeedbacks(project.widget_project_id)
       fetchPages(project.id)
+      setEditName(project.name)
+      setEditClientName(project.client_name ?? '')
+      setEditClientEmail(project.client_email ?? '')
+      setEditClientPhone(project.client_phone ?? '')
+      setEditExistingUrl(project.existing_url ?? '')
+      setEditBenchmarkUrl(project.benchmark_url ?? '')
+      setEditNewSiteUrl(project.new_site_url ?? '')
     }
   }, [project, fetchFeedbacks, fetchPages])
 
@@ -127,6 +143,26 @@ export function ProjectDetail() {
 
   const handleStatusChange = async (id: string, status: ReviewComment['status']) => {
     await updateFeedbackStatus(id, status)
+  }
+
+  const handleSaveProject = async () => {
+    if (!projectId) return
+    await updateProject(projectId, {
+      name: editName,
+      client_name: editClientName || null,
+      client_email: editClientEmail || null,
+      client_phone: editClientPhone || null,
+      existing_url: editExistingUrl || null,
+      benchmark_url: editBenchmarkUrl || null,
+      new_site_url: editNewSiteUrl || null,
+    })
+  }
+
+  const handleDeleteProject = async () => {
+    if (!projectId) return
+    if (!window.confirm('정말로 이 프로젝트를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return
+    await deleteProject(projectId)
+    navigate('/')
   }
 
   // If a page is selected in feedback tab, show its feedbacks
@@ -256,15 +292,38 @@ export function ProjectDetail() {
                       key={page.id}
                       className={cn(
                         'flex items-center px-5 py-3.5 hover:bg-slate-50 transition-colors group',
-                        i < pages.length - 1 && 'border-b border-slate-50'
+                        i < pages.length - 1 && 'border-b border-slate-50',
+                        page.feedback_enabled && 'bg-emerald-50/50'
                       )}
                     >
                       <div className="flex-1 min-w-0 mr-4">
-                        <div className="text-sm font-medium text-slate-900">{page.label}</div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-slate-900">{page.label}</span>
+                          {page.feedback_enabled ? (
+                            <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200">
+                              피드백 요청중
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded-full bg-slate-100 text-slate-500 border border-slate-200">
+                              제작중
+                            </span>
+                          )}
+                        </div>
                         <div className="text-xs text-slate-400 truncate">{page.path}</div>
                       </div>
 
                       <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => toggleFeedback(page.id, !page.feedback_enabled)}
+                          className={cn(
+                            'px-2.5 py-1 text-xs rounded-md cursor-pointer transition-colors border',
+                            page.feedback_enabled
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                              : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
+                          )}
+                        >
+                          {page.feedback_enabled ? '피드백 중지' : '피드백 요청'}
+                        </button>
                         {feedbackCount > 0 && (
                           <span className="text-xs text-slate-500">
                             <MessageSquare size={12} className="inline mr-1" />
@@ -628,6 +687,56 @@ export function ProjectDetail() {
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* Edit Project Info */}
+            <div className="bg-white rounded-xl border border-slate-200 p-5 mt-6">
+              <h3 className="text-sm font-semibold text-slate-900 mb-4">프로젝트 정보 수정</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs text-slate-500 mb-1">프로젝트 이름</label>
+                  <input type="text" value={editName} onChange={e => setEditName(e.target.value)} className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-500 mb-1">클라이언트 이름</label>
+                  <input type="text" value={editClientName} onChange={e => setEditClientName(e.target.value)} className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-500 mb-1">클라이언트 이메일</label>
+                  <input type="email" value={editClientEmail} onChange={e => setEditClientEmail(e.target.value)} className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-500 mb-1">클라이언트 전화번호</label>
+                  <input type="tel" value={editClientPhone} onChange={e => setEditClientPhone(e.target.value)} className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-500 mb-1">기존 사이트</label>
+                  <input type="url" value={editExistingUrl} onChange={e => setEditExistingUrl(e.target.value)} className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-500 mb-1">벤치마킹 사이트</label>
+                  <input type="url" value={editBenchmarkUrl} onChange={e => setEditBenchmarkUrl(e.target.value)} className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-500 mb-1">신규 사이트</label>
+                  <input type="url" value={editNewSiteUrl} onChange={e => setEditNewSiteUrl(e.target.value)} className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                </div>
+                <div className="pt-2">
+                  <Button size="md" onClick={handleSaveProject}>
+                    저장
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Danger Zone */}
+            <div className="mt-6 border-2 border-red-200 rounded-xl p-5">
+              <h3 className="text-sm font-semibold text-red-600 mb-2">프로젝트 삭제</h3>
+              <p className="text-xs text-slate-500 mb-4">프로젝트를 삭제하면 모든 페이지, 피드백 데이터가 함께 삭제됩니다. 이 작업은 되돌릴 수 없습니다.</p>
+              <Button variant="danger" size="md" onClick={handleDeleteProject}>
+                <Trash2 size={14} />
+                프로젝트 삭제
+              </Button>
             </div>
           </>
         )}

@@ -179,43 +179,57 @@ export function ClientReview() {
               const pageFeedback = getPageFeedback(page.path)
               const pageOpen = pageFeedback.filter(f => f.status === 'open').length
               const pageResolved = pageFeedback.filter(f => f.status === 'resolved').length
+              const isEnabled = page.feedback_enabled
 
               return (
                 <div
                   key={page.id}
-                  onClick={() => window.open(getPageUrl(page.path), '_blank')}
-                  className="bg-slate-800 rounded-xl border border-slate-700 p-5 hover:border-blue-500/50 hover:bg-slate-800/80 transition-all cursor-pointer group"
+                  onClick={isEnabled ? () => window.open(getPageUrl(page.path), '_blank') : undefined}
+                  className={
+                    isEnabled
+                      ? 'bg-slate-800 rounded-xl border border-slate-700 p-5 hover:border-blue-500/50 hover:bg-slate-800/80 transition-all cursor-pointer group'
+                      : 'bg-slate-800 rounded-xl border border-slate-700/50 p-5 opacity-40 cursor-default'
+                  }
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <Globe size={14} className="text-slate-500" />
-                      <span className="text-sm font-medium text-white">{page.label}</span>
+                      <Globe size={14} className={isEnabled ? 'text-slate-500' : 'text-slate-600'} />
+                      <span className={isEnabled ? 'text-sm font-medium text-white' : 'text-sm font-medium text-slate-400'}>{page.label}</span>
+                      {!isEnabled && (
+                        <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded-full bg-slate-700 text-slate-400 border border-slate-600">
+                          제작중
+                        </span>
+                      )}
                     </div>
-                    <ExternalLink size={14} className="text-slate-600 group-hover:text-blue-400 transition-colors" />
+                    {isEnabled && <ExternalLink size={14} className="text-slate-600 group-hover:text-blue-400 transition-colors" />}
                   </div>
                   <div className="text-xs text-slate-500 truncate mb-3">{page.path}</div>
 
                   <div className="flex items-center gap-3">
-                    {pageFeedback.length > 0 ? (
-                      <>
-                        <span className="flex items-center gap-1 text-xs text-slate-400">
-                          <MessageSquare size={12} />
-                          {pageFeedback.length}
-                        </span>
-                        {pageOpen > 0 && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                            {pageOpen} open
+                    {isEnabled ? (
+                      pageFeedback.length > 0 ? (
+                        <>
+                          <span className="flex items-center gap-1 text-xs text-slate-400">
+                            <MessageSquare size={12} />
+                            {pageFeedback.length}
                           </span>
-                        )}
-                        {pageResolved > 0 && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                            <CheckCircle size={10} />
-                            {pageResolved}
-                          </span>
-                        )}
-                      </>
+                          {pageOpen > 0 && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                              {pageOpen} open
+                            </span>
+                          )}
+                          {pageResolved > 0 && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                              <CheckCircle size={10} />
+                              {pageResolved}
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        <span className="text-xs text-slate-600">피드백 없음</span>
+                      )
                     ) : (
-                      <span className="text-xs text-slate-600">피드백 없음</span>
+                      <span className="text-xs text-slate-600">피드백 비활성</span>
                     )}
                   </div>
                 </div>
