@@ -10,7 +10,9 @@ export function ProjectNew() {
   const { addProject } = useProjectStore()
 
   const [name, setName] = useState('')
-  const [baseUrl, setBaseUrl] = useState('')
+  const [existingUrl, setExistingUrl] = useState('')
+  const [benchmarkUrl, setBenchmarkUrl] = useState('')
+  const [newSiteUrl, setNewSiteUrl] = useState('')
   const [clientName, setClientName] = useState('')
   const [clientEmail, setClientEmail] = useState('')
   const [clientPhone, setClientPhone] = useState('')
@@ -26,11 +28,16 @@ export function ProjectNew() {
 
     const project = await addProject({
       name: name.trim(),
-      base_url: baseUrl.trim() || null,
+      base_url: newSiteUrl.trim() || null,
+      existing_url: existingUrl.trim() || null,
+      benchmark_url: benchmarkUrl.trim() || null,
+      new_site_url: newSiteUrl.trim() || null,
       client_name: clientName.trim() || null,
       client_email: clientEmail.trim() || null,
       client_phone: clientPhone.trim() || null,
       widget_project_id: finalWidgetId,
+      widget_installed: false,
+      review_token: null,
       status: 'active',
     })
 
@@ -39,6 +46,8 @@ export function ProjectNew() {
       navigate(`/projects/${project.id}`)
     }
   }
+
+  const inputClass = 'w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
 
   return (
     <>
@@ -64,23 +73,54 @@ export function ProjectNew() {
                 value={name}
                 onChange={e => setName(e.target.value)}
                 placeholder="ABC Corp Website"
-                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={inputClass}
                 autoFocus
                 required
               />
             </div>
 
+            <hr className="border-slate-200" />
+
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                Base URL
+                기존 사이트 주소
               </label>
               <input
                 type="url"
-                value={baseUrl}
-                onChange={e => setBaseUrl(e.target.value)}
-                placeholder="https://abc-corp.com"
-                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={existingUrl}
+                onChange={e => setExistingUrl(e.target.value)}
+                placeholder="https://old-site.com"
+                className={inputClass}
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                벤치마킹 사이트 주소
+              </label>
+              <input
+                type="url"
+                value={benchmarkUrl}
+                onChange={e => setBenchmarkUrl(e.target.value)}
+                placeholder="https://benchmark-site.com"
+                className={inputClass}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                신규 사이트 주소
+              </label>
+              <input
+                type="url"
+                value={newSiteUrl}
+                onChange={e => setNewSiteUrl(e.target.value)}
+                placeholder="https://new-site.com"
+                className={inputClass}
+              />
+              <p className="text-xs text-slate-400 mt-1">
+                피드백 위젯이 설치될 사이트 주소
+              </p>
             </div>
 
             <div>
@@ -92,7 +132,7 @@ export function ProjectNew() {
                 value={widgetId}
                 onChange={e => setWidgetId(e.target.value)}
                 placeholder="auto-generated from project name"
-                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={inputClass}
               />
               <p className="text-xs text-slate-400 mt-1">
                 tera-feedback-widget의 data-project 속성에 사용될 ID
@@ -109,7 +149,7 @@ export function ProjectNew() {
                   value={clientName}
                   onChange={e => setClientName(e.target.value)}
                   placeholder="ABC Corp"
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={inputClass}
                 />
               </div>
               <div>
@@ -119,7 +159,7 @@ export function ProjectNew() {
                   value={clientEmail}
                   onChange={e => setClientEmail(e.target.value)}
                   placeholder="client@abc-corp.com"
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={inputClass}
                 />
               </div>
             </div>
@@ -131,7 +171,7 @@ export function ProjectNew() {
                 value={clientPhone}
                 onChange={e => setClientPhone(e.target.value)}
                 placeholder="010-1234-5678"
-                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={inputClass}
               />
             </div>
 
