@@ -171,7 +171,7 @@ export function ProjectDetail() {
     : null
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
-    { key: 'pages', label: '페이지 목록', icon: <FileText size={14} /> },
+    { key: 'pages', label: '제작 페이지 목록', icon: <FileText size={14} /> },
     { key: 'feedback', label: '피드백 현황', icon: <BarChart3 size={14} /> },
     { key: 'settings', label: '설정', icon: <Settings size={14} /> },
   ]
@@ -296,20 +296,18 @@ export function ProjectDetail() {
                         page.feedback_enabled && 'bg-emerald-50/50'
                       )}
                     >
-                      <div className="flex-1 min-w-0 mr-4">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-slate-900">{page.label}</span>
-                          {page.feedback_enabled ? (
-                            <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200">
-                              피드백 요청중
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded-full bg-slate-100 text-slate-500 border border-slate-200">
-                              제작중
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-xs text-slate-400 truncate">{page.path}</div>
+                      <div className="flex items-center gap-2 flex-1 min-w-0 mr-4">
+                        <span className="text-sm font-medium text-slate-900">{page.label}</span>
+                        {page.feedback_enabled ? (
+                          <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200">
+                            피드백 요청중
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded-full bg-slate-100 text-slate-500 border border-slate-200">
+                            제작중
+                          </span>
+                        )}
+                        <span className="text-xs text-slate-400 truncate">{page.path}</span>
                       </div>
 
                       <div className="flex items-center gap-3">
@@ -451,7 +449,11 @@ export function ProjectDetail() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => window.open(selectedPageUrl, '_blank')}
+                  onClick={() => {
+                    const base = project.new_site_url || project.base_url || ''
+                    const url = selectedPageUrl.startsWith('http') ? selectedPageUrl : `${base.replace(/\/$/, '')}${selectedPageUrl}`
+                    window.open(url, '_blank')
+                  }}
                 >
                   <ExternalLink size={12} />
                   라이브 사이트에서 보기
@@ -636,30 +638,26 @@ export function ProjectDetail() {
             {/* Project URLs */}
             <div className="bg-white rounded-xl border border-slate-200 p-5 mb-6">
               <h3 className="text-sm font-semibold text-slate-900 mb-4">프로젝트 URL 정보</h3>
-              <div className="space-y-3 text-sm">
+              <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-sm">
                 {project.existing_url && (
-                  <div className="flex items-center gap-3">
-                    <span className="text-slate-500 w-32 shrink-0">기존 사이트</span>
-                    <a href={project.existing_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline truncate">
-                      {project.existing_url}
-                    </a>
-                  </div>
+                  <>
+                    <span className="text-slate-500">기존 사이트:</span>
+                    <a href={project.existing_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline truncate">{project.existing_url}</a>
+                  </>
                 )}
+                {project.existing_url && project.benchmark_url && <span className="text-slate-300">|</span>}
                 {project.benchmark_url && (
-                  <div className="flex items-center gap-3">
-                    <span className="text-slate-500 w-32 shrink-0">벤치마킹</span>
-                    <a href={project.benchmark_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline truncate">
-                      {project.benchmark_url}
-                    </a>
-                  </div>
+                  <>
+                    <span className="text-slate-500">벤치마킹:</span>
+                    <a href={project.benchmark_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline truncate">{project.benchmark_url}</a>
+                  </>
                 )}
+                {(project.existing_url || project.benchmark_url) && (project.new_site_url || project.base_url) && <span className="text-slate-300">|</span>}
                 {(project.new_site_url || project.base_url) && (
-                  <div className="flex items-center gap-3">
-                    <span className="text-slate-500 w-32 shrink-0">신규 사이트</span>
-                    <a href={project.new_site_url || project.base_url!} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline truncate">
-                      {project.new_site_url || project.base_url}
-                    </a>
-                  </div>
+                  <>
+                    <span className="text-slate-500">신규 사이트:</span>
+                    <a href={project.new_site_url || project.base_url!} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline truncate">{project.new_site_url || project.base_url}</a>
+                  </>
                 )}
               </div>
             </div>
@@ -667,24 +665,26 @@ export function ProjectDetail() {
             {/* Client Info */}
             <div className="bg-white rounded-xl border border-slate-200 p-5">
               <h3 className="text-sm font-semibold text-slate-900 mb-4">클라이언트 정보</h3>
-              <div className="space-y-3 text-sm">
+              <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-sm">
                 {project.client_name && (
-                  <div className="flex items-center gap-3">
-                    <span className="text-slate-500 w-32 shrink-0">이름</span>
+                  <>
+                    <span className="text-slate-500">이름:</span>
                     <span className="text-slate-700">{project.client_name}</span>
-                  </div>
+                  </>
                 )}
+                {project.client_name && project.client_email && <span className="text-slate-300">|</span>}
                 {project.client_email && (
-                  <div className="flex items-center gap-3">
-                    <span className="text-slate-500 w-32 shrink-0">이메일</span>
+                  <>
+                    <span className="text-slate-500">이메일:</span>
                     <span className="text-slate-700">{project.client_email}</span>
-                  </div>
+                  </>
                 )}
+                {(project.client_name || project.client_email) && project.client_phone && <span className="text-slate-300">|</span>}
                 {project.client_phone && (
-                  <div className="flex items-center gap-3">
-                    <span className="text-slate-500 w-32 shrink-0">전화번호</span>
+                  <>
+                    <span className="text-slate-500">전화번호:</span>
                     <span className="text-slate-700">{project.client_phone}</span>
-                  </div>
+                  </>
                 )}
               </div>
             </div>
