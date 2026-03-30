@@ -691,8 +691,11 @@ export function ProjectDetail() {
 
             {/* Edit Project Info */}
             <div className="bg-white rounded-xl border border-slate-200 p-5 mt-6">
-              <h3 className="text-sm font-semibold text-slate-900 mb-4">프로젝트 정보 수정</h3>
-              <div className="space-y-3">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold text-slate-900">프로젝트 정보 수정</h3>
+                <Button size="sm" onClick={handleSaveProject}>저장</Button>
+              </div>
+              <div className="grid grid-cols-4 gap-3 mb-3">
                 <div>
                   <label className="block text-xs text-slate-500 mb-1">프로젝트 이름</label>
                   <input type="text" value={editName} onChange={e => setEditName(e.target.value)} className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
@@ -709,6 +712,8 @@ export function ProjectDetail() {
                   <label className="block text-xs text-slate-500 mb-1">클라이언트 전화번호</label>
                   <input type="tel" value={editClientPhone} onChange={e => setEditClientPhone(e.target.value)} className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                 </div>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs text-slate-500 mb-1">기존 사이트</label>
                   <input type="url" value={editExistingUrl} onChange={e => setEditExistingUrl(e.target.value)} className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
@@ -720,11 +725,6 @@ export function ProjectDetail() {
                 <div>
                   <label className="block text-xs text-slate-500 mb-1">신규 사이트</label>
                   <input type="url" value={editNewSiteUrl} onChange={e => setEditNewSiteUrl(e.target.value)} className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
-                </div>
-                <div className="pt-2">
-                  <Button size="md" onClick={handleSaveProject}>
-                    저장
-                  </Button>
                 </div>
               </div>
             </div>
