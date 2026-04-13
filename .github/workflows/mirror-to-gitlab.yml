@@ -14,4 +14,4 @@ jobs:
       - name: Mirror to GitLab
         run: |
           git remote add gitlab https://root:${{ secrets.GITLAB_TOKEN }}@gitlab.teraflow.net/teraflow/tera-pm.git
-          git push gitlab --mirror
+          git push --force gitlab --mirror
